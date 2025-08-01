@@ -31,29 +31,53 @@ interface CampaignPerformance {
 }
 
 // Define a type-safe column configuration
-interface TableColumn {
-  id: keyof CampaignPerformance
+interface TableColumn<T extends keyof CampaignPerformance> {
+  id: T
   header: string
-  format?: (value: any) => string
+  format?: (value: CampaignPerformance[T]) => string
 }
 
-const columnDefinitions: TableColumn[] = [
+const columnDefinitions: [
+  TableColumn<'campaign'>,
+  TableColumn<'channel'>,
+  TableColumn<'clicks'>,
+  TableColumn<'impressions'>,
+  TableColumn<'ctr'>,
+  TableColumn<'cost'>,
+  TableColumn<'conversions'>
+] = [
   { id: 'campaign', header: 'Campaign' },
   { id: 'channel', header: 'Channel' },
-  { id: 'clicks', header: 'Clicks', format: (value) => value.toLocaleString() },
-  { id: 'impressions', header: 'Impressions', format: (value) => value.toLocaleString() },
-  { id: 'ctr', header: 'CTR (%)', format: (value) => value.toFixed(2) },
+  { 
+    id: 'clicks', 
+    header: 'Clicks', 
+    format: (value: number) => value.toLocaleString() 
+  },
+  { 
+    id: 'impressions', 
+    header: 'Impressions', 
+    format: (value: number) => value.toLocaleString() 
+  },
+  { 
+    id: 'ctr', 
+    header: 'CTR (%)', 
+    format: (value: number) => value.toFixed(2) 
+  },
   { 
     id: 'cost', 
     header: 'Cost ($)', 
-    format: (value) => value.toLocaleString('en-US', {
+    format: (value: number) => value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
   },
-  { id: 'conversions', header: 'Conversions', format: (value) => value.toLocaleString() },
+  { 
+    id: 'conversions', 
+    header: 'Conversions', 
+    format: (value: number) => value.toLocaleString() 
+  },
 ];
 
 // Convert to TanStack Table columns
