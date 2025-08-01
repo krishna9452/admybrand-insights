@@ -6,7 +6,7 @@ export default async function OverviewPage() {
   const isVercel = process.env.VERCEL === '1';
   const baseUrl = isVercel
     ? process.env.NEXT_PUBLIC_API_BASE_URL 
-    : 'http://localhost:3000';
+    : 'https://admybrand-insights-khaki.vercel.app/';
 
   const res = await fetch(`${baseUrl}/api/some-endpoint`, {
     cache: 'no-store',
