@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Download } from 'lucide-react'
 
-// Define the data type for your table rows
 interface CampaignPerformance {
   campaign: string
   channel: string
@@ -31,8 +30,13 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define the columns with proper typing
-const columns: ColumnDef<CampaignPerformance>[] = [
+// Define a more specific column type that includes accessorKey
+interface AppColumnDef<TData> extends ColumnDef<TData> {
+  accessorKey?: keyof TData
+  header: string
+}
+
+const columns: AppColumnDef<CampaignPerformance>[] = [
   {
     accessorKey: 'campaign',
     header: 'Campaign',
@@ -44,42 +48,32 @@ const columns: ColumnDef<CampaignPerformance>[] = [
   {
     accessorKey: 'clicks',
     header: 'Clicks',
-    cell: ({ row }) => {
-      return row.original.clicks.toLocaleString()
-    },
+    cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
     accessorKey: 'impressions',
     header: 'Impressions',
-    cell: ({ row }) => {
-      return row.original.impressions.toLocaleString()
-    },
+    cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
     accessorKey: 'ctr',
     header: 'CTR (%)',
-    cell: ({ row }) => {
-      return row.original.ctr.toFixed(2)
-    },
+    cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
     accessorKey: 'cost',
     header: 'Cost ($)',
-    cell: ({ row }) => {
-      return row.original.cost.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    },
+    cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
   },
   {
     accessorKey: 'conversions',
     header: 'Conversions',
-    cell: ({ row }) => {
-      return row.original.conversions.toLocaleString()
-    },
+    cell: ({ row }) => row.original.conversions.toLocaleString(),
   },
 ]
 
@@ -97,20 +91,19 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    const headers = columns.map((col) => col.header as string)
+    const headers = columns.map(col => col.header)
     const csvContent = [
       headers.join(','),
-      ...data.map((row) =>
+      ...data.map(row =>
         columns
-          .map((col) => {
-            const accessor = col.accessorKey as keyof CampaignPerformance
-            // Format numbers appropriately for CSV
-            if (accessor === 'cost') {
-              return row[accessor].toFixed(2)
-            } else if (accessor === 'ctr') {
-              return row[accessor].toFixed(2)
+          .map(col => {
+            if (!col.accessorKey) return ''
+            const value = row[col.accessorKey]
+            
+            if (col.accessorKey === 'cost' || col.accessorKey === 'ctr') {
+              return Number(value).toFixed(2)
             }
-            return row[accessor]
+            return String(value)
           })
           .join(',')
       ),
@@ -119,8 +112,8 @@ export function DataTable({ data }: DataTableProps) {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', 'admaybrand-data.csv')
+    link.href = url
+    link.download = 'admaybrand-data.csv'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -134,9 +127,7 @@ export function DataTable({ data }: DataTableProps) {
           <Input
             placeholder="Filter campaigns..."
             value={(table.getColumn('campaign')?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn('campaign')?.setFilterValue(event.target.value)
-            }
+            onChange={e => table.getColumn('campaign')?.setFilterValue(e.target.value)}
             className="max-w-sm"
           />
           <Button variant="outline" size="sm" onClick={exportToCSV}>
@@ -145,17 +136,15 @@ export function DataTable({ data }: DataTableProps) {
           </Button>
         </div>
       </div>
+      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -163,27 +152,18 @@ export function DataTable({ data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell) => (
+              table.getRowModel().rows.map(row => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -191,6 +171,7 @@ export function DataTable({ data }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
+      
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
