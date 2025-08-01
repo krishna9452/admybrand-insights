@@ -30,79 +30,37 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define strict types for each column
-type ColumnDefinition<T extends keyof CampaignPerformance> = {
-  id: T
-  header: string
-  format?: (value: CampaignPerformance[T]) => string
-}
-
-// Create individual column definitions with explicit types
-const campaignColumn: ColumnDefinition<'campaign'> = {
-  id: 'campaign',
-  header: 'Campaign'
-}
-
-const channelColumn: ColumnDefinition<'channel'> = {
-  id: 'channel',
-  header: 'Channel'
-}
-
-const clicksColumn: ColumnDefinition<'clicks'> = {
-  id: 'clicks',
-  header: 'Clicks',
-  format: (value: number) => value.toLocaleString()
-}
-
-const impressionsColumn: ColumnDefinition<'impressions'> = {
-  id: 'impressions',
-  header: 'Impressions',
-  format: (value: number) => value.toLocaleString()
-}
-
-const ctrColumn: ColumnDefinition<'ctr'> = {
-  id: 'ctr',
-  header: 'CTR (%)',
-  format: (value: number) => value.toFixed(2)
-}
-
-const costColumn: ColumnDefinition<'cost'> = {
-  id: 'cost',
-  header: 'Cost ($)',
-  format: (value: number) => value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-}
-
-const conversionsColumn: ColumnDefinition<'conversions'> = {
-  id: 'conversions',
-  header: 'Conversions',
-  format: (value: number) => value.toLocaleString()
-}
-
-// Combine all columns
-const columnDefinitions = [
-  campaignColumn,
-  channelColumn,
-  clicksColumn,
-  impressionsColumn,
-  ctrColumn,
-  costColumn,
-  conversionsColumn
-]
-
-// Convert to TanStack Table columns
-const columns: ColumnDef<CampaignPerformance>[] = columnDefinitions.map(col => ({
-  id: col.id,
-  header: col.header,
+// Define a type-safe way to create columns
+const createColumn = <K extends keyof CampaignPerformance>(
+  id: K,
+  header: string,
+  format?: (value: CampaignPerformance[K]) => string
+): ColumnDef<CampaignPerformance> => ({
+  id,
+  header,
   cell: ({ row }) => {
-    const value = row.original[col.id]
-    return col.format ? col.format(value) : String(value)
+    const value = row.original[id]
+    return format ? format(value) : String(value)
   }
-}))
+})
+
+// Create columns with explicit typing
+const columns: ColumnDef<CampaignPerformance>[] = [
+  createColumn('campaign', 'Campaign'),
+  createColumn('channel', 'Channel'),
+  createColumn('clicks', 'Clicks', (value) => value.toLocaleString()),
+  createColumn('impressions', 'Impressions', (value) => value.toLocaleString()),
+  createColumn('ctr', 'CTR (%)', (value) => value.toFixed(2)),
+  createColumn('cost', 'Cost ($)', (value) => 
+    value.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  ),
+  createColumn('conversions', 'Conversions', (value) => value.toLocaleString()),
+]
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -118,14 +76,17 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    const headers = columnDefinitions.map(col => col.header)
+    // Get property order from columns
+    const properties = columns.map(col => col.id as keyof CampaignPerformance)
+    const headers = columns.map(col => col.header as string)
+    
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        columnDefinitions
-          .map(col => {
-            const value = row[col.id]
-            if (col.id === 'cost' || col.id === 'ctr') {
+        properties
+          .map(property => {
+            const value = row[property]
+            if (property === 'cost' || property === 'ctr') {
               return Number(value).toFixed(2)
             }
             return String(value)
