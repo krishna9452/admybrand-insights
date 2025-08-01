@@ -30,8 +30,8 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define a type-safe way to access column definitions
-interface AppColumnDef<TData> extends ColumnDef<TData> {
+// Create a type-safe column definition with explicit accessorKey
+type AppColumnDef<TData> = ColumnDef<TData> & {
   accessorKey?: keyof TData
   header: string
 }
