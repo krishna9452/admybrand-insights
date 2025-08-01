@@ -31,21 +31,15 @@ interface CampaignPerformance {
 }
 
 // Define a type-safe column configuration
-interface TableColumn<T extends keyof CampaignPerformance> {
-  id: T
-  header: string
-  format?: (value: CampaignPerformance[T]) => string
-}
+type ColumnConfig = {
+  [K in keyof CampaignPerformance]: {
+    id: K
+    header: string
+    format?: (value: CampaignPerformance[K]) => string
+  }
+}[keyof CampaignPerformance]
 
-const columnDefinitions: [
-  TableColumn<'campaign'>,
-  TableColumn<'channel'>,
-  TableColumn<'clicks'>,
-  TableColumn<'impressions'>,
-  TableColumn<'ctr'>,
-  TableColumn<'cost'>,
-  TableColumn<'conversions'>
-] = [
+const columnDefinitions: ColumnConfig[] = [
   { id: 'campaign', header: 'Campaign' },
   { id: 'channel', header: 'Channel' },
   { 
@@ -78,17 +72,17 @@ const columnDefinitions: [
     header: 'Conversions', 
     format: (value: number) => value.toLocaleString() 
   },
-];
+]
 
 // Convert to TanStack Table columns
 const columns: ColumnDef<CampaignPerformance>[] = columnDefinitions.map(col => ({
   id: col.id,
   header: col.header,
   cell: ({ row }) => {
-    const value = row.original[col.id];
-    return col.format ? col.format(value) : String(value);
+    const value = row.original[col.id]
+    return col.format ? col.format(value) : String(value)
   }
-}));
+}))
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -101,34 +95,34 @@ export function DataTable({ data }: DataTableProps) {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-  });
+  })
 
   const exportToCSV = () => {
-    const headers = columnDefinitions.map(col => col.header);
+    const headers = columnDefinitions.map(col => col.header)
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
         columnDefinitions
           .map(col => {
-            const value = row[col.id];
+            const value = row[col.id]
             if (col.id === 'cost' || col.id === 'ctr') {
-              return Number(value).toFixed(2);
+              return Number(value).toFixed(2)
             }
-            return String(value);
+            return String(value)
           })
           .join(',')
       ),
-    ].join('\n');
+    ].join('\n')
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'admybrand-data.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'admybrand-data.csv'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   return (
     <div className="p-4 rounded-lg border bg-white dark:bg-gray-800 shadow-sm">
@@ -214,5 +208,5 @@ export function DataTable({ data }: DataTableProps) {
         </Button>
       </div>
     </div>
-  );
+  )
 }
