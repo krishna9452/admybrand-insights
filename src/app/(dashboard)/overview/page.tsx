@@ -1,22 +1,24 @@
-import { Cards } from '../components/cards'
-import { Charts } from '../components/charts'
-import { DataTable } from '../components/data-table'
-import { ModeToggle } from '../components/mode-toggle'
+export const dynamic = 'force-dynamic'; // Prevents static generation
+
+import React from 'react';
 
 export default async function OverviewPage() {
-  const response = await fetch('http://localhost:3000/api/mock-data')
-  const data = await response.json()
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+
+  const res = await fetch(`${baseUrl}/api/some-endpoint`, {
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch overview data');
+  }
+
+  const data = await res.json();
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">ADmyBRAND Insights</h1>
-        <ModeToggle />
-      </div>
-
-      <Cards metrics={data.metrics} />
-      <Charts timeSeries={data.timeSeries} campaigns={data.campaigns} />
-      <DataTable data={data.tableData} />
+    <div>
+      <h1>Overview</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
-  )
+  );
 }
