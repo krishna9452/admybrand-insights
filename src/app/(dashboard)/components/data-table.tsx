@@ -30,59 +30,59 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Create a completely type-safe column definition
-const columns = [
+// Define column accessors separately for type safety
+const columnAccessors = [
+  'campaign',
+  'channel',
+  'clicks',
+  'impressions',
+  'ctr',
+  'cost',
+  'conversions'
+] as const;
+
+type ColumnAccessor = typeof columnAccessors[number];
+
+const columns: ColumnDef<CampaignPerformance>[] = [
   {
-    id: 'campaign',
     accessorKey: 'campaign',
     header: 'Campaign',
   },
   {
-    id: 'channel',
     accessorKey: 'channel',
     header: 'Channel',
   },
   {
-    id: 'clicks',
     accessorKey: 'clicks',
     header: 'Clicks',
-    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
-      row.original.clicks.toLocaleString(),
+    cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
-    id: 'impressions',
     accessorKey: 'impressions',
     header: 'Impressions',
-    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
-      row.original.impressions.toLocaleString(),
+    cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
-    id: 'ctr',
     accessorKey: 'ctr',
     header: 'CTR (%)',
-    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
-      row.original.ctr.toFixed(2),
+    cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
-    id: 'cost',
     accessorKey: 'cost',
     header: 'Cost ($)',
-    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
-      row.original.cost.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
+    cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
   },
   {
-    id: 'conversions',
     accessorKey: 'conversions',
     header: 'Conversions',
-    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
-      row.original.conversions.toLocaleString(),
+    cell: ({ row }) => row.original.conversions.toLocaleString(),
   },
-] satisfies ColumnDef<CampaignPerformance>[];
+]
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -98,14 +98,11 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    // Get accessor keys safely
-    const accessors = columns.map(col => col.accessorKey) as Array<keyof CampaignPerformance>;
-    
     const headers = columns.map(col => col.header as string);
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        accessors
+        columnAccessors
           .map(accessor => {
             const value = row[accessor];
             if (accessor === 'cost' || accessor === 'ctr') {
