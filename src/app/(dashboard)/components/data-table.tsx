@@ -20,19 +20,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Download } from 'lucide-react'
 
-// ✅ Define a strong type for your row data
-type CampaignRow = {
-  campaign: string
-  channel: string
-  clicks: number
-  impressions: number
-  ctr: number
-  cost: number
-  conversions: number
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
 }
 
-// ✅ Columns are now typed
-const columns: ColumnDef<CampaignRow>[] = [
+const columns: ColumnDef<any>[] = [
   {
     accessorKey: 'campaign',
     header: 'Campaign',
@@ -63,7 +56,7 @@ const columns: ColumnDef<CampaignRow>[] = [
   },
 ]
 
-export function DataTable({ data }: { data: CampaignRow[] }) {
+export function DataTable({ data }: { data: any[] }) {
   const table = useReactTable({
     data,
     columns,
@@ -73,14 +66,18 @@ export function DataTable({ data }: { data: CampaignRow[] }) {
   })
 
   const exportToCSV = () => {
-    const headers = columns.map((col) => col.header as string)
+    const headers = columns.map((col) =>
+      typeof col.header === 'string' ? col.header : ''
+    )
     const csvContent = [
       headers.join(','),
       ...data.map((row) =>
         columns
           .map((col) => {
-            const accessor = col.accessorKey as keyof CampaignRow
-            return row[accessor]
+            if ('accessorKey' in col && typeof col.accessorKey === 'string') {
+              return row[col.accessorKey]
+            }
+            return ''
           })
           .join(',')
       ),
@@ -90,7 +87,7 @@ export function DataTable({ data }: { data: CampaignRow[] }) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', url)
-    link.setAttribute('download', 'admybrand-data.csv')
+    link.setAttribute('download', 'admaybrand-data.csv')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -142,7 +139,10 @@ export function DataTable({ data }: { data: CampaignRow[] }) {
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
