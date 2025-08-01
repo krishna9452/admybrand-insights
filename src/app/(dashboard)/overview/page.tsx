@@ -3,7 +3,10 @@ export const dynamic = 'force-dynamic'; // Prevents static generation
 import React from 'react';
 
 export default async function OverviewPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+  const isVercel = process.env.VERCEL === '1';
+  const baseUrl = isVercel
+    ? process.env.NEXT_PUBLIC_API_BASE_URL 
+    : 'http://localhost:3000';
 
   const res = await fetch(`${baseUrl}/api/some-endpoint`, {
     cache: 'no-store',
