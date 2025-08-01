@@ -30,17 +30,7 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Create a mapping of column IDs to data properties
-const columnMap = {
-  campaign: 'campaign',
-  channel: 'channel',
-  clicks: 'clicks',
-  impressions: 'impressions',
-  ctr: 'ctr',
-  cost: 'cost',
-  conversions: 'conversions'
-} as const;
-
+// Define the columns with explicit cell renderers
 const columns: ColumnDef<CampaignPerformance>[] = [
   {
     id: 'campaign',
@@ -98,11 +88,22 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
+    // Define the property order for CSV export
+    const properties: (keyof CampaignPerformance)[] = [
+      'campaign',
+      'channel',
+      'clicks',
+      'impressions',
+      'ctr',
+      'cost',
+      'conversions'
+    ];
+
     const headers = columns.map(col => col.header as string);
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        Object.values(columnMap)
+        properties
           .map(property => {
             const value = row[property];
             if (property === 'cost' || property === 'ctr') {
