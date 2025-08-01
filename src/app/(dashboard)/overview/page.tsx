@@ -1,116 +1,135 @@
-'use client';
+'use client'
 
-import { useEffect, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
   LineChart,
   Line,
-  CartesianGrid,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
-} from "recharts";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+} from 'recharts'
+import { DataTable } from '@/components/ui/data-table'
+import { columns, data } from './table-data'
 
-interface RevenueData {
-  date: string;
-  revenue: number;
-}
+const revenueData = [
+  { date: '2025-07-01', revenue: 4800 },
+  { date: '2025-07-02', revenue: 5000 },
+  { date: '2025-07-03', revenue: 4900 },
+  { date: '2025-07-04', revenue: 5150 },
+  { date: '2025-07-05', revenue: 5400 },
+]
+
+const userData = [
+  { date: '2025-07-01', users: 120 },
+  { date: '2025-07-02', users: 150 },
+  { date: '2025-07-03', users: 100 },
+  { date: '2025-07-04', users: 180 },
+  { date: '2025-07-05', users: 200 },
+]
+
+const deviceData = [
+  { name: 'Mobile', value: 65 },
+  { name: 'Desktop', value: 30 },
+  { name: 'Tablet', value: 5 },
+]
 
 export default function OverviewPage() {
-  const [data, setData] = useState<RevenueData[]>([]);
-  const pdfRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Replace with real fetch if needed
-    const fetchData = async () => {
-      const mockData: RevenueData[] = [
-        { date: "2025-07-01", revenue: 5000 },
-        { date: "2025-07-02", revenue: 5200 },
-        { date: "2025-07-03", revenue: 5100 },
-        { date: "2025-07-04", revenue: 5300 },
-        { date: "2025-07-05", revenue: 5500 },
-      ];
-      setData(mockData);
-    };
-    fetchData();
-  }, []);
-
-  function exportToCSV() {
-    const csvRows = [
-      ['Date', 'Revenue'],
-      ...data.map(row => [row.date, row.revenue])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'revenue-data.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  function exportToPDF() {
-    if (!pdfRef.current) return;
-
-    html2canvas(pdfRef.current).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: [canvas.width, canvas.height],
-      });
-
-      pdf.addImage({
-        imageData: imgData,
-        format: 'PNG',
-        x: 0,
-        y: 0,
-        width: canvas.width,
-        height: canvas.height,
-      });
-
-      pdf.save("revenue-chart.pdf");
-    });
-  }
-
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Revenue Overview</h1>
-        <div className="flex gap-2">
-          <Button onClick={exportToCSV} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
-          <Button onClick={exportToPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
-        </div>
+    <div className="p-6 space-y-6">
+      {/* Top Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>
+          <CardContent>$25,000</CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Users</CardTitle></CardHeader>
+          <CardContent>3,200</CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Conversions</CardTitle></CardHeader>
+          <CardContent>220</CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Growth</CardTitle></CardHeader>
+          <CardContent>8.5%</CardContent>
+        </Card>
       </div>
 
-      <Card ref={pdfRef}>
-        <CardContent className="p-4">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
-              <CartesianGrid stroke="#ccc" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader><CardTitle>Revenue (Line Chart)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="#4f46e5" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Users (Bar Chart)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={userData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="users" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader><CardTitle>Device Breakdown (Pie Chart)</CardTitle></CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={deviceData}
+                  dataKey="value"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#6366f1"
+                  label
+                />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Data Table */}
+      <Card>
+        <CardHeader><CardTitle>Recent Revenue Data</CardTitle></CardHeader>
+        <CardContent>
+          <DataTable columns={columns} data={data} />
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
