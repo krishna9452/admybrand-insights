@@ -7,9 +7,6 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
-  Row,
-  HeaderGroup,
-  Column,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -23,64 +20,43 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Download } from 'lucide-react'
 
-interface CampaignPerformance {
-  campaign: string
-  channel: string
-  clicks: number
-  impressions: number
-  ctr: number
-  cost: number
-  conversions: number
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
 }
 
-const columns: ColumnDef<CampaignPerformance>[] = [
+const columns: ColumnDef<any>[] = [
   {
-    id: 'campaign',
-    header: 'Campaign',
     accessorKey: 'campaign',
+    header: 'Campaign',
   },
   {
-    id: 'channel',
-    header: 'Channel',
     accessorKey: 'channel',
+    header: 'Channel',
   },
   {
-    id: 'clicks',
+    accessorKey: 'clicks',
     header: 'Clicks',
-    cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
-    id: 'impressions',
+    accessorKey: 'impressions',
     header: 'Impressions',
-    cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
-    id: 'ctr',
+    accessorKey: 'ctr',
     header: 'CTR (%)',
-    cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
-    id: 'cost',
+    accessorKey: 'cost',
     header: 'Cost ($)',
-    cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }),
   },
   {
-    id: 'conversions',
+    accessorKey: 'conversions',
     header: 'Conversions',
-    cell: ({ row }) => row.original.conversions.toLocaleString(),
-  }
+  },
 ]
 
-interface DataTableProps {
-  data: CampaignPerformance[]
-}
-
-export function DataTable({ data }: DataTableProps) {
+export function DataTable({ data }: { data: any[] }) {
   const table = useReactTable({
     data,
     columns,
@@ -90,38 +66,37 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    const headers = ['Campaign', 'Channel', 'Clicks', 'Impressions', 'CTR (%)', 'Cost ($)', 'Conversions']
+    const headers = columns.map((col) => col.header)
     const csvContent = [
       headers.join(','),
-      ...data.map(row => [
-        `"${row.campaign.replace(/"/g, '""')}"`,
-        `"${row.channel.replace(/"/g, '""')}"`,
-        row.clicks,
-        row.impressions,
-        row.ctr.toFixed(2),
-        row.cost.toFixed(2),
-        row.conversions
-      ].join(','))
+      ...data.map((row) =>
+        columns
+          .map((col) => {
+            const accessor = col.accessorKey as string
+            return row[accessor]
+          })
+          .join(',')
+      ),
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = url
-    link.download = 'admybrand-data.csv'
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'admaybrand-data.csv')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
 
   return (
-    <div className="p-4 rounded-lg border bg-white dark:bg-gray-800 shadow-sm">
+    <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Campaign Performance</h3>
         <div className="flex gap-2">
           <Input
             placeholder="Filter campaigns..."
-            value={(table.getColumn('campaign')?.getFilterValue() as string | undefined) ?? ''}
+            value={(table.getColumn('campaign')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
               table.getColumn('campaign')?.setFilterValue(event.target.value)
             }
@@ -136,22 +111,26 @@ export function DataTable({ data }: DataTableProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup: HeaderGroup<CampaignPerformance>) => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row: Row<CampaignPerformance>) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
@@ -197,6 +176,6 @@ export function DataTable({ data }: DataTableProps) {
           Next
         </Button>
       </div>
-    </div>
+    </Card>
   )
 }
