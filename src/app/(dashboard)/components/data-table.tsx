@@ -34,10 +34,10 @@ const columns: ColumnDef<any>[] = [
     accessorKey: 'channel',
     header: 'Channel',
   },
-  {
-    accessorKey: 'clicks',
-    header: 'Clicks',
-  },
+//   {
+//     accessorKey: 'clicks',
+//     header: 'Clicks',
+//   },
   {
     accessorKey: 'impressions',
     header: 'Impressions',
