@@ -30,40 +30,37 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Helper type to extract accessor keys from ColumnDef
-type AccessorKeys<T> = T extends ColumnDef<infer TData> ? keyof TData : never
+// Define a type-safe way to access column definitions
+interface AppColumnDef<TData> extends ColumnDef<TData> {
+  accessorKey?: keyof TData
+  header: string
+}
 
-const columns: ColumnDef<CampaignPerformance>[] = [
+const columns: AppColumnDef<CampaignPerformance>[] = [
   {
-    id: 'campaign',
     accessorKey: 'campaign',
     header: 'Campaign',
   },
   {
-    id: 'channel',
     accessorKey: 'channel',
     header: 'Channel',
   },
   {
-    id: 'clicks',
     accessorKey: 'clicks',
     header: 'Clicks',
     cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
-    id: 'impressions',
     accessorKey: 'impressions',
     header: 'Impressions',
     cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
-    id: 'ctr',
     accessorKey: 'ctr',
     header: 'CTR (%)',
     cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
-    id: 'cost',
     accessorKey: 'cost',
     header: 'Cost ($)',
     cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
@@ -74,7 +71,6 @@ const columns: ColumnDef<CampaignPerformance>[] = [
     }),
   },
   {
-    id: 'conversions',
     accessorKey: 'conversions',
     header: 'Conversions',
     cell: ({ row }) => row.original.conversions.toLocaleString(),
@@ -95,19 +91,16 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    // Create a map of column ids to accessor keys
-    const columnAccessors = columns.reduce((acc, column) => {
-      if ('accessorKey' in column && column.accessorKey) {
-        acc[column.id as string] = column.accessorKey as keyof CampaignPerformance
-      }
-      return acc
-    }, {} as Record<string, keyof CampaignPerformance>)
+    // Create a safe mapping of column accessors
+    const columnAccessors = columns
+      .filter((col): col is { accessorKey: keyof CampaignPerformance } => !!col.accessorKey)
+      .map(col => col.accessorKey)
 
-    const headers = columns.map(col => col.header as string)
+    const headers = columns.map(col => col.header)
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        Object.values(columnAccessors)
+        columnAccessors
           .map(accessor => {
             const value = row[accessor]
             if (accessor === 'cost' || accessor === 'ctr') {
@@ -123,7 +116,7 @@ export function DataTable({ data }: DataTableProps) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'admaybrand-data.csv'
+    link.download = 'admybrand-data.csv'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -137,7 +130,9 @@ export function DataTable({ data }: DataTableProps) {
           <Input
             placeholder="Filter campaigns..."
             value={(table.getColumn('campaign')?.getFilterValue() as string) ?? ''}
-            onChange={e => table.getColumn('campaign')?.setFilterValue(e.target.value)}
+            onChange={(event) =>
+              table.getColumn('campaign')?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
           <Button variant="outline" size="sm" onClick={exportToCSV}>
@@ -146,15 +141,17 @@ export function DataTable({ data }: DataTableProps) {
           </Button>
         </div>
       </div>
-      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
+                {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -162,18 +159,27 @@ export function DataTable({ data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                  {row.getVisibleCells().map(cell => (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -181,7 +187,6 @@ export function DataTable({ data }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
-      
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
