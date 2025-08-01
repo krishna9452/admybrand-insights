@@ -30,28 +30,30 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define a type-safe way to create columns
-const createColumn = <K extends keyof CampaignPerformance>(
-  id: K,
+// Strictly typed column definition creator
+function createColumn<T extends keyof CampaignPerformance>(
+  id: T,
   header: string,
-  format?: (value: CampaignPerformance[K]) => string
-): ColumnDef<CampaignPerformance> => ({
-  id,
-  header,
-  cell: ({ row }) => {
-    const value = row.original[id]
-    return format ? format(value) : String(value)
+  format?: (value: CampaignPerformance[T]) => string
+): ColumnDef<CampaignPerformance> {
+  return {
+    id,
+    header,
+    cell: ({ row }) => {
+      const value = row.original[id]
+      return format ? format(value) : String(value)
+    }
   }
-})
+}
 
 // Create columns with explicit typing
 const columns: ColumnDef<CampaignPerformance>[] = [
   createColumn('campaign', 'Campaign'),
   createColumn('channel', 'Channel'),
-  createColumn('clicks', 'Clicks', (value) => value.toLocaleString()),
-  createColumn('impressions', 'Impressions', (value) => value.toLocaleString()),
-  createColumn('ctr', 'CTR (%)', (value) => value.toFixed(2)),
-  createColumn('cost', 'Cost ($)', (value) => 
+  createColumn('clicks', 'Clicks', (value: number) => value.toLocaleString()),
+  createColumn('impressions', 'Impressions', (value: number) => value.toLocaleString()),
+  createColumn('ctr', 'CTR (%)', (value: number) => value.toFixed(2)),
+  createColumn('cost', 'Cost ($)', (value: number) => 
     value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -59,7 +61,7 @@ const columns: ColumnDef<CampaignPerformance>[] = [
       maximumFractionDigits: 2,
     })
   ),
-  createColumn('conversions', 'Conversions', (value) => value.toLocaleString()),
+  createColumn('conversions', 'Conversions', (value: number) => value.toLocaleString()),
 ]
 
 interface DataTableProps {
@@ -77,7 +79,7 @@ export function DataTable({ data }: DataTableProps) {
 
   const exportToCSV = () => {
     // Get property order from columns
-    const properties = columns.map(col => col.id as keyof CampaignPerformance)
+    const properties = columns.map(col => col.id) as Array<keyof CampaignPerformance>
     const headers = columns.map(col => col.header as string)
     
     const csvContent = [
