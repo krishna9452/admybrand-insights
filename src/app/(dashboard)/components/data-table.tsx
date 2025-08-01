@@ -30,45 +30,45 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define column accessors separately for type safety
-const columnAccessors = [
-  'campaign',
-  'channel',
-  'clicks',
-  'impressions',
-  'ctr',
-  'cost',
-  'conversions'
-] as const;
-
-type ColumnAccessor = typeof columnAccessors[number];
+// Create a mapping of column IDs to data properties
+const columnMap = {
+  campaign: 'campaign',
+  channel: 'channel',
+  clicks: 'clicks',
+  impressions: 'impressions',
+  ctr: 'ctr',
+  cost: 'cost',
+  conversions: 'conversions'
+} as const;
 
 const columns: ColumnDef<CampaignPerformance>[] = [
   {
-    accessorKey: 'campaign',
+    id: 'campaign',
     header: 'Campaign',
+    cell: ({ row }) => row.original.campaign,
   },
   {
-    accessorKey: 'channel',
+    id: 'channel',
     header: 'Channel',
+    cell: ({ row }) => row.original.channel,
   },
   {
-    accessorKey: 'clicks',
+    id: 'clicks',
     header: 'Clicks',
     cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
-    accessorKey: 'impressions',
+    id: 'impressions',
     header: 'Impressions',
     cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
-    accessorKey: 'ctr',
+    id: 'ctr',
     header: 'CTR (%)',
     cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
-    accessorKey: 'cost',
+    id: 'cost',
     header: 'Cost ($)',
     cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
       style: 'currency',
@@ -78,7 +78,7 @@ const columns: ColumnDef<CampaignPerformance>[] = [
     }),
   },
   {
-    accessorKey: 'conversions',
+    id: 'conversions',
     header: 'Conversions',
     cell: ({ row }) => row.original.conversions.toLocaleString(),
   },
@@ -102,10 +102,10 @@ export function DataTable({ data }: DataTableProps) {
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        columnAccessors
-          .map(accessor => {
-            const value = row[accessor];
-            if (accessor === 'cost' || accessor === 'ctr') {
+        Object.values(columnMap)
+          .map(property => {
+            const value = row[property];
+            if (property === 'cost' || property === 'ctr') {
               return Number(value).toFixed(2);
             }
             return String(value);
