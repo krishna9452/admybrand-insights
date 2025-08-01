@@ -31,35 +31,40 @@ interface CampaignPerformance {
 }
 
 // Define a type-safe column configuration
-const createColumn = <T extends keyof CampaignPerformance>(
-  id: T,
-  header: string,
-  format?: (value: CampaignPerformance[T]) => string
-): ColumnDef<CampaignPerformance> => ({
-  id,
-  header,
-  cell: ({ row }) => {
-    const value = row.original[id];
-    return format ? format(value) : String(value);
-  }
-});
+interface TableColumn {
+  id: keyof CampaignPerformance
+  header: string
+  format?: (value: any) => string
+}
 
-const columns: ColumnDef<CampaignPerformance>[] = [
-  createColumn('campaign', 'Campaign'),
-  createColumn('channel', 'Channel'),
-  createColumn('clicks', 'Clicks', (value) => value.toLocaleString()),
-  createColumn('impressions', 'Impressions', (value) => value.toLocaleString()),
-  createColumn('ctr', 'CTR (%)', (value) => value.toFixed(2)),
-  createColumn('cost', 'Cost ($)', (value) => 
-    value.toLocaleString('en-US', {
+const columnDefinitions: TableColumn[] = [
+  { id: 'campaign', header: 'Campaign' },
+  { id: 'channel', header: 'Channel' },
+  { id: 'clicks', header: 'Clicks', format: (value) => value.toLocaleString() },
+  { id: 'impressions', header: 'Impressions', format: (value) => value.toLocaleString() },
+  { id: 'ctr', header: 'CTR (%)', format: (value) => value.toFixed(2) },
+  { 
+    id: 'cost', 
+    header: 'Cost ($)', 
+    format: (value) => value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
-  ),
-  createColumn('conversions', 'Conversions', (value) => value.toLocaleString()),
+  },
+  { id: 'conversions', header: 'Conversions', format: (value) => value.toLocaleString() },
 ];
+
+// Convert to TanStack Table columns
+const columns: ColumnDef<CampaignPerformance>[] = columnDefinitions.map(col => ({
+  id: col.id,
+  header: col.header,
+  cell: ({ row }) => {
+    const value = row.original[col.id];
+    return col.format ? col.format(value) : String(value);
+  }
+}));
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -75,16 +80,14 @@ export function DataTable({ data }: DataTableProps) {
   });
 
   const exportToCSV = () => {
-    const headers = columns.map(col => col.header as string);
-    const properties = columns.map(col => col.id as keyof CampaignPerformance);
-    
+    const headers = columnDefinitions.map(col => col.header);
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        properties
-          .map(property => {
-            const value = row[property];
-            if (property === 'cost' || property === 'ctr') {
+        columnDefinitions
+          .map(col => {
+            const value = row[col.id];
+            if (col.id === 'cost' || col.id === 'ctr') {
               return Number(value).toFixed(2);
             }
             return String(value);
