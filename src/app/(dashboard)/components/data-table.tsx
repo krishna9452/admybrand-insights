@@ -30,52 +30,59 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Create a type-safe column definition with explicit accessorKey
-type AppColumnDef<TData> = ColumnDef<TData> & {
-  accessorKey?: keyof TData
-  header: string
-}
-
-const columns: AppColumnDef<CampaignPerformance>[] = [
+// Create a completely type-safe column definition
+const columns = [
   {
+    id: 'campaign',
     accessorKey: 'campaign',
     header: 'Campaign',
   },
   {
+    id: 'channel',
     accessorKey: 'channel',
     header: 'Channel',
   },
   {
+    id: 'clicks',
     accessorKey: 'clicks',
     header: 'Clicks',
-    cell: ({ row }) => row.original.clicks.toLocaleString(),
+    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
+      row.original.clicks.toLocaleString(),
   },
   {
+    id: 'impressions',
     accessorKey: 'impressions',
     header: 'Impressions',
-    cell: ({ row }) => row.original.impressions.toLocaleString(),
+    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
+      row.original.impressions.toLocaleString(),
   },
   {
+    id: 'ctr',
     accessorKey: 'ctr',
     header: 'CTR (%)',
-    cell: ({ row }) => row.original.ctr.toFixed(2),
+    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
+      row.original.ctr.toFixed(2),
   },
   {
+    id: 'cost',
     accessorKey: 'cost',
     header: 'Cost ($)',
-    cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }),
+    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
+      row.original.cost.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
   },
   {
+    id: 'conversions',
     accessorKey: 'conversions',
     header: 'Conversions',
-    cell: ({ row }) => row.original.conversions.toLocaleString(),
+    cell: ({ row }: { row: { original: CampaignPerformance } }) => 
+      row.original.conversions.toLocaleString(),
   },
-]
+] satisfies ColumnDef<CampaignPerformance>[];
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -91,35 +98,33 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    // Create a safe mapping of column accessors
-    const columnAccessors = columns
-      .filter((col): col is { accessorKey: keyof CampaignPerformance } => !!col.accessorKey)
-      .map(col => col.accessorKey)
-
-    const headers = columns.map(col => col.header)
+    // Get accessor keys safely
+    const accessors = columns.map(col => col.accessorKey) as Array<keyof CampaignPerformance>;
+    
+    const headers = columns.map(col => col.header as string);
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        columnAccessors
+        accessors
           .map(accessor => {
-            const value = row[accessor]
+            const value = row[accessor];
             if (accessor === 'cost' || accessor === 'ctr') {
-              return Number(value).toFixed(2)
+              return Number(value).toFixed(2);
             }
-            return String(value)
+            return String(value);
           })
           .join(',')
       ),
-    ].join('\n')
+    ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'admybrand-data.csv'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'admybrand-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
