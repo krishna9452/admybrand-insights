@@ -30,49 +30,36 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define the columns with explicit cell renderers
+// Define a type-safe column configuration
+const createColumn = <T extends keyof CampaignPerformance>(
+  id: T,
+  header: string,
+  format?: (value: CampaignPerformance[T]) => string
+): ColumnDef<CampaignPerformance> => ({
+  id,
+  header,
+  cell: ({ row }) => {
+    const value = row.original[id];
+    return format ? format(value) : String(value);
+  }
+});
+
 const columns: ColumnDef<CampaignPerformance>[] = [
-  {
-    id: 'campaign',
-    header: 'Campaign',
-    cell: ({ row }) => row.original.campaign,
-  },
-  {
-    id: 'channel',
-    header: 'Channel',
-    cell: ({ row }) => row.original.channel,
-  },
-  {
-    id: 'clicks',
-    header: 'Clicks',
-    cell: ({ row }) => row.original.clicks.toLocaleString(),
-  },
-  {
-    id: 'impressions',
-    header: 'Impressions',
-    cell: ({ row }) => row.original.impressions.toLocaleString(),
-  },
-  {
-    id: 'ctr',
-    header: 'CTR (%)',
-    cell: ({ row }) => row.original.ctr.toFixed(2),
-  },
-  {
-    id: 'cost',
-    header: 'Cost ($)',
-    cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
+  createColumn('campaign', 'Campaign'),
+  createColumn('channel', 'Channel'),
+  createColumn('clicks', 'Clicks', (value) => value.toLocaleString()),
+  createColumn('impressions', 'Impressions', (value) => value.toLocaleString()),
+  createColumn('ctr', 'CTR (%)', (value) => value.toFixed(2)),
+  createColumn('cost', 'Cost ($)', (value) => 
+    value.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }),
-  },
-  {
-    id: 'conversions',
-    header: 'Conversions',
-    cell: ({ row }) => row.original.conversions.toLocaleString(),
-  },
-]
+    })
+  ),
+  createColumn('conversions', 'Conversions', (value) => value.toLocaleString()),
+];
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -85,21 +72,12 @@ export function DataTable({ data }: DataTableProps) {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-  })
+  });
 
   const exportToCSV = () => {
-    // Define the property order for CSV export
-    const properties: (keyof CampaignPerformance)[] = [
-      'campaign',
-      'channel',
-      'clicks',
-      'impressions',
-      'ctr',
-      'cost',
-      'conversions'
-    ];
-
     const headers = columns.map(col => col.header as string);
+    const properties = columns.map(col => col.id as keyof CampaignPerformance);
+    
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
@@ -123,7 +101,7 @@ export function DataTable({ data }: DataTableProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
 
   return (
     <div className="p-4 rounded-lg border bg-white dark:bg-gray-800 shadow-sm">
@@ -209,5 +187,5 @@ export function DataTable({ data }: DataTableProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }
