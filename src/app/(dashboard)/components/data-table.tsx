@@ -7,6 +7,9 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
+  Row,
+  HeaderGroup,
+  Column,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -30,49 +33,48 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define strict types for each column
-const columns = [
+const columns: ColumnDef<CampaignPerformance>[] = [
   {
     id: 'campaign',
     header: 'Campaign',
-    accessor: (row: CampaignPerformance) => row.campaign
+    accessorKey: 'campaign',
   },
   {
     id: 'channel',
     header: 'Channel',
-    accessor: (row: CampaignPerformance) => row.channel
+    accessorKey: 'channel',
   },
   {
     id: 'clicks',
     header: 'Clicks',
-    accessor: (row: CampaignPerformance) => row.clicks.toLocaleString()
+    cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
     id: 'impressions',
     header: 'Impressions',
-    accessor: (row: CampaignPerformance) => row.impressions.toLocaleString()
+    cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
     id: 'ctr',
     header: 'CTR (%)',
-    accessor: (row: CampaignPerformance) => row.ctr.toFixed(2)
+    cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
     id: 'cost',
     header: 'Cost ($)',
-    accessor: (row: CampaignPerformance) => row.cost.toLocaleString('en-US', {
+    cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })
+    }),
   },
   {
     id: 'conversions',
     header: 'Conversions',
-    accessor: (row: CampaignPerformance) => row.conversions.toLocaleString()
+    cell: ({ row }) => row.original.conversions.toLocaleString(),
   }
-] satisfies ColumnDef<CampaignPerformance>[]
+]
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -119,7 +121,7 @@ export function DataTable({ data }: DataTableProps) {
         <div className="flex gap-2">
           <Input
             placeholder="Filter campaigns..."
-            value={(table.getColumn('campaign')?.getFilterValue() as string) ?? ''}
+            value={(table.getColumn('campaign')?.getFilterValue() as string | undefined) ?? ''}
             onChange={(event) =>
               table.getColumn('campaign')?.setFilterValue(event.target.value)
             }
@@ -134,7 +136,7 @@ export function DataTable({ data }: DataTableProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup: HeaderGroup<CampaignPerformance>) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
@@ -149,7 +151,7 @@ export function DataTable({ data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row: Row<CampaignPerformance>) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
