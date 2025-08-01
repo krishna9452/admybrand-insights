@@ -30,48 +30,68 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define a type-safe column configuration
-type ColumnConfig = {
-  [K in keyof CampaignPerformance]: {
-    id: K
-    header: string
-    format?: (value: CampaignPerformance[K]) => string
-  }
-}[keyof CampaignPerformance]
+// Define strict types for each column
+type ColumnDefinition<T extends keyof CampaignPerformance> = {
+  id: T
+  header: string
+  format?: (value: CampaignPerformance[T]) => string
+}
 
-const columnDefinitions: ColumnConfig[] = [
-  { id: 'campaign', header: 'Campaign' },
-  { id: 'channel', header: 'Channel' },
-  { 
-    id: 'clicks', 
-    header: 'Clicks', 
-    format: (value: number) => value.toLocaleString() 
-  },
-  { 
-    id: 'impressions', 
-    header: 'Impressions', 
-    format: (value: number) => value.toLocaleString() 
-  },
-  { 
-    id: 'ctr', 
-    header: 'CTR (%)', 
-    format: (value: number) => value.toFixed(2) 
-  },
-  { 
-    id: 'cost', 
-    header: 'Cost ($)', 
-    format: (value: number) => value.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  },
-  { 
-    id: 'conversions', 
-    header: 'Conversions', 
-    format: (value: number) => value.toLocaleString() 
-  },
+// Create individual column definitions with explicit types
+const campaignColumn: ColumnDefinition<'campaign'> = {
+  id: 'campaign',
+  header: 'Campaign'
+}
+
+const channelColumn: ColumnDefinition<'channel'> = {
+  id: 'channel',
+  header: 'Channel'
+}
+
+const clicksColumn: ColumnDefinition<'clicks'> = {
+  id: 'clicks',
+  header: 'Clicks',
+  format: (value: number) => value.toLocaleString()
+}
+
+const impressionsColumn: ColumnDefinition<'impressions'> = {
+  id: 'impressions',
+  header: 'Impressions',
+  format: (value: number) => value.toLocaleString()
+}
+
+const ctrColumn: ColumnDefinition<'ctr'> = {
+  id: 'ctr',
+  header: 'CTR (%)',
+  format: (value: number) => value.toFixed(2)
+}
+
+const costColumn: ColumnDefinition<'cost'> = {
+  id: 'cost',
+  header: 'Cost ($)',
+  format: (value: number) => value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+const conversionsColumn: ColumnDefinition<'conversions'> = {
+  id: 'conversions',
+  header: 'Conversions',
+  format: (value: number) => value.toLocaleString()
+}
+
+// Combine all columns
+const columnDefinitions = [
+  campaignColumn,
+  channelColumn,
+  clicksColumn,
+  impressionsColumn,
+  ctrColumn,
+  costColumn,
+  conversionsColumn
 ]
 
 // Convert to TanStack Table columns
