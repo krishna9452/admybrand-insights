@@ -19,13 +19,26 @@ import { Card } from '@/components/ui/card'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
-export function Charts({
-  timeSeries,
-  campaigns,
-}: {
-  timeSeries: any
-  campaigns: any
-}) {
+// Define types for time series data
+interface TimeSeriesData {
+  month: string
+  revenue: number
+  users: number
+}
+
+// Define types for campaign data
+interface CampaignData {
+  name: string
+  value: number
+}
+
+// Define props for Charts component
+interface ChartsProps {
+  timeSeries: TimeSeriesData[]
+  campaigns: CampaignData[]
+}
+
+export function Charts({ timeSeries, campaigns }: ChartsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 mb-8">
       <Card className="p-4">
@@ -82,7 +95,7 @@ export function Charts({
                   `${name}: ${(percent * 100).toFixed(0)}%`
                 }
               >
-                {campaigns.map((entry: any, index: number) => (
+                {campaigns.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}

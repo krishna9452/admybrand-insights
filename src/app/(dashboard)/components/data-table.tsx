@@ -20,12 +20,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Download } from 'lucide-react'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+// Define the data type for your table rows
+interface CampaignPerformance {
+  campaign: string
+  channel: string
+  clicks: number
+  impressions: number
+  ctr: number
+  cost: number
+  conversions: number
 }
 
-const columns: ColumnDef<any>[] = [
+// Define the columns with proper typing
+const columns: ColumnDef<CampaignPerformance>[] = [
   {
     accessorKey: 'campaign',
     header: 'Campaign',
@@ -37,26 +44,50 @@ const columns: ColumnDef<any>[] = [
   {
     accessorKey: 'clicks',
     header: 'Clicks',
+    cell: ({ row }) => {
+      return row.original.clicks.toLocaleString()
+    },
   },
   {
     accessorKey: 'impressions',
     header: 'Impressions',
+    cell: ({ row }) => {
+      return row.original.impressions.toLocaleString()
+    },
   },
   {
     accessorKey: 'ctr',
     header: 'CTR (%)',
+    cell: ({ row }) => {
+      return row.original.ctr.toFixed(2)
+    },
   },
   {
     accessorKey: 'cost',
     header: 'Cost ($)',
+    cell: ({ row }) => {
+      return row.original.cost.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    },
   },
   {
     accessorKey: 'conversions',
     header: 'Conversions',
+    cell: ({ row }) => {
+      return row.original.conversions.toLocaleString()
+    },
   },
 ]
 
-export function DataTable({ data }: { data: any[] }) {
+interface DataTableProps {
+  data: CampaignPerformance[]
+}
+
+export function DataTable({ data }: DataTableProps) {
   const table = useReactTable({
     data,
     columns,
@@ -66,13 +97,19 @@ export function DataTable({ data }: { data: any[] }) {
   })
 
   const exportToCSV = () => {
-    const headers = columns.map((col) => col.header)
+    const headers = columns.map((col) => col.header as string)
     const csvContent = [
       headers.join(','),
       ...data.map((row) =>
         columns
           .map((col) => {
-            const accessor = col.accessorKey as string
+            const accessor = col.accessorKey as keyof CampaignPerformance
+            // Format numbers appropriately for CSV
+            if (accessor === 'cost') {
+              return row[accessor].toFixed(2)
+            } else if (accessor === 'ctr') {
+              return row[accessor].toFixed(2)
+            }
             return row[accessor]
           })
           .join(',')
@@ -113,18 +150,14 @@ export function DataTable({ data }: { data: any[] }) {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>

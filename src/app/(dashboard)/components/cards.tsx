@@ -1,8 +1,37 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowUp, ArrowDown, TrendingUp } from 'lucide-react'
+import { ArrowUp, ArrowDown, TrendingUp, LucideIcon } from 'lucide-react'
 
-export function Cards({ metrics }: { metrics: any }) {
-  const metricCards = [
+// Define the metric type for individual metrics
+interface Metric {
+  current: number
+  change: number
+  trend: 'up' | 'down'
+}
+
+// Define the metrics object type
+interface MetricsData {
+  revenue: Metric
+  users: Metric
+  conversions: Metric
+  growth: Metric
+}
+
+// Define the props for the Cards component
+interface CardsProps {
+  metrics: MetricsData
+}
+
+// Define the type for individual card data
+interface MetricCard {
+  title: string
+  value: string
+  change: number
+  trend: 'up' | 'down'
+  icon: LucideIcon
+}
+
+export function Cards({ metrics }: CardsProps) {
+  const metricCards: MetricCard[] = [
     {
       title: 'Revenue',
       value: `$${metrics.revenue.current.toLocaleString()}`,
