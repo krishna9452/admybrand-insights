@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,7 +26,7 @@ export default function OverviewPage() {
   const pdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Example data; replace this with your real fetch logic
+    // Replace with real fetch if needed
     const fetchData = async () => {
       const mockData: RevenueData[] = [
         { date: "2025-07-01", revenue: 5000 },
@@ -68,7 +68,16 @@ export default function OverviewPage() {
         unit: 'px',
         format: [canvas.width, canvas.height],
       });
-      pdf.addImage(imgData, 'PNG', 0, 0);
+
+      pdf.addImage({
+        imageData: imgData,
+        format: 'PNG',
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      });
+
       pdf.save("revenue-chart.pdf");
     });
   }
