@@ -90,7 +90,7 @@ export function DataTable({ data }: { data: any[] }) {
   }
 
   return (
-    <Card className="p-4">
+    <div className="p-4 rounded-lg border bg-white dark:bg-gray-800 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Campaign Performance</h3>
         <div className="flex gap-2">
@@ -176,6 +176,6 @@ export function DataTable({ data }: { data: any[] }) {
           Next
         </Button>
       </div>
-    </Card>
+    </div>
   )
 }
