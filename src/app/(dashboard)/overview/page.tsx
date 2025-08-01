@@ -22,6 +22,7 @@ import {
 } from 'recharts'
 import { DataTable } from '@/components/ui/data-table'
 import { columns, data } from './table-data'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 const revenueData = [
   { date: '2025-07-01', revenue: 4800 },
@@ -47,31 +48,39 @@ const deviceData = [
 
 export default function OverviewPage() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8 animate-fade-in">
+      {/* Header with Theme Toggle */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-semibold tracking-tight">Dashboard Overview</h1>
+        <ThemeToggle />
+      </div>
+
       {/* Top Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader><CardTitle>Revenue</CardTitle></CardHeader>
-          <CardContent>$25,000</CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Users</CardTitle></CardHeader>
-          <CardContent>3,200</CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Conversions</CardTitle></CardHeader>
-          <CardContent>220</CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Growth</CardTitle></CardHeader>
-          <CardContent>8.5%</CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { title: 'Revenue', value: '$25,000' },
+          { title: 'Users', value: '3,200' },
+          { title: 'Conversions', value: '220' },
+          { title: 'Growth', value: '8.5%' },
+        ].map((item) => (
+          <Card
+            key={item.title}
+            className="hover:shadow-xl transition-shadow duration-300"
+          >
+            <CardHeader>
+              <CardTitle>{item.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xl font-medium">{item.value}</CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle>Revenue (Line Chart)</CardTitle></CardHeader>
+        <Card className="hover:shadow-xl transition-shadow duration-300">
+          <CardHeader>
+            <CardTitle>Revenue (Line Chart)</CardTitle>
+          </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenueData}>
@@ -86,8 +95,10 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Users (Bar Chart)</CardTitle></CardHeader>
+        <Card className="hover:shadow-xl transition-shadow duration-300">
+          <CardHeader>
+            <CardTitle>Users (Bar Chart)</CardTitle>
+          </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={userData}>
@@ -102,8 +113,10 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader><CardTitle>Device Breakdown (Pie Chart)</CardTitle></CardHeader>
+        <Card className="md:col-span-2 hover:shadow-xl transition-shadow duration-300">
+          <CardHeader>
+            <CardTitle>Device Breakdown (Pie Chart)</CardTitle>
+          </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -124,8 +137,10 @@ export default function OverviewPage() {
       </div>
 
       {/* Data Table */}
-      <Card>
-        <CardHeader><CardTitle>Recent Revenue Data</CardTitle></CardHeader>
+      <Card className="hover:shadow-xl transition-shadow duration-300">
+        <CardHeader>
+          <CardTitle>Recent Revenue Data</CardTitle>
+        </CardHeader>
         <CardContent>
           <DataTable columns={columns} data={data} />
         </CardContent>
