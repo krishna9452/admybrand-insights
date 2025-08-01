@@ -30,39 +30,49 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Strictly typed column definition creator
-function createColumn<T extends keyof CampaignPerformance>(
-  id: T,
-  header: string,
-  format?: (value: CampaignPerformance[T]) => string
-): ColumnDef<CampaignPerformance> {
-  return {
-    id,
-    header,
-    cell: ({ row }) => {
-      const value = row.original[id]
-      return format ? format(value) : String(value)
-    }
-  }
-}
-
-// Create columns with explicit typing
-const columns: ColumnDef<CampaignPerformance>[] = [
-  createColumn('campaign', 'Campaign'),
-  createColumn('channel', 'Channel'),
-  createColumn('clicks', 'Clicks', (value: number) => value.toLocaleString()),
-  createColumn('impressions', 'Impressions', (value: number) => value.toLocaleString()),
-  createColumn('ctr', 'CTR (%)', (value: number) => value.toFixed(2)),
-  createColumn('cost', 'Cost ($)', (value: number) => 
-    value.toLocaleString('en-US', {
+// Define strict types for each column
+const columns = [
+  {
+    id: 'campaign',
+    header: 'Campaign',
+    accessor: (row: CampaignPerformance) => row.campaign
+  },
+  {
+    id: 'channel',
+    header: 'Channel',
+    accessor: (row: CampaignPerformance) => row.channel
+  },
+  {
+    id: 'clicks',
+    header: 'Clicks',
+    accessor: (row: CampaignPerformance) => row.clicks.toLocaleString()
+  },
+  {
+    id: 'impressions',
+    header: 'Impressions',
+    accessor: (row: CampaignPerformance) => row.impressions.toLocaleString()
+  },
+  {
+    id: 'ctr',
+    header: 'CTR (%)',
+    accessor: (row: CampaignPerformance) => row.ctr.toFixed(2)
+  },
+  {
+    id: 'cost',
+    header: 'Cost ($)',
+    accessor: (row: CampaignPerformance) => row.cost.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
-  ),
-  createColumn('conversions', 'Conversions', (value: number) => value.toLocaleString()),
-]
+  },
+  {
+    id: 'conversions',
+    header: 'Conversions',
+    accessor: (row: CampaignPerformance) => row.conversions.toLocaleString()
+  }
+] satisfies ColumnDef<CampaignPerformance>[]
 
 interface DataTableProps {
   data: CampaignPerformance[]
@@ -78,23 +88,18 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    // Get property order from columns
-    const properties = columns.map(col => col.id) as Array<keyof CampaignPerformance>
-    const headers = columns.map(col => col.header as string)
-    
+    const headers = ['Campaign', 'Channel', 'Clicks', 'Impressions', 'CTR (%)', 'Cost ($)', 'Conversions']
     const csvContent = [
       headers.join(','),
-      ...data.map(row =>
-        properties
-          .map(property => {
-            const value = row[property]
-            if (property === 'cost' || property === 'ctr') {
-              return Number(value).toFixed(2)
-            }
-            return String(value)
-          })
-          .join(',')
-      ),
+      ...data.map(row => [
+        `"${row.campaign.replace(/"/g, '""')}"`,
+        `"${row.channel.replace(/"/g, '""')}"`,
+        row.clicks,
+        row.impressions,
+        row.ctr.toFixed(2),
+        row.cost.toFixed(2),
+        row.conversions
+      ].join(','))
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
