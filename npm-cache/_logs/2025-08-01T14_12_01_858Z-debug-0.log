@@ -7,8 +7,8 @@
 6 silly config load:file:/home/krishna/.nvm/versions/node/v24.1.0/etc/npmrc
 7 verbose title npm run dev
 8 verbose argv "run" "dev"
-9 verbose logfile logs-max:10 dir:/home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T10_44_22_931Z-
-10 verbose logfile /home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T10_44_22_931Z-debug-0.log
+9 verbose logfile logs-max:10 dir:/home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T14_12_01_858Z-
+10 verbose logfile /home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T14_12_01_858Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
 13 verbose cwd /home/krishna/admybrand-insights
@@ -17,4 +17,4 @@
 16 verbose npm  v11.5.1
 17 verbose exit 1
 18 verbose code 1
-19 error A complete log of this run can be found in: /home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T10_44_22_931Z-debug-0.log
+19 error A complete log of this run can be found in: /home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T14_12_01_858Z-debug-0.log

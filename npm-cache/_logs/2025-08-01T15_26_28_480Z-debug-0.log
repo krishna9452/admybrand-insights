@@ -7,8 +7,8 @@
 6 silly config load:file:/home/krishna/.nvm/versions/node/v24.1.0/etc/npmrc
 7 verbose title npm config get prefix
 8 verbose argv "config" "get" "prefix"
-9 verbose logfile logs-max:10 dir:/home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T10_46_06_835Z-
-10 verbose logfile /home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T10_46_06_835Z-debug-0.log
+9 verbose logfile logs-max:10 dir:/home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T15_26_28_480Z-
+10 verbose logfile /home/krishna/admybrand-insights/npm-cache/_logs/2025-08-01T15_26_28_480Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 verbose cwd /home/krishna/admybrand-insights
 13 verbose os Linux 6.6.87.2-microsoft-standard-WSL2
