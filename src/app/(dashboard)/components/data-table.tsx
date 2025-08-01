@@ -20,12 +20,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Download } from 'lucide-react'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+// ✅ Define a strong type for your row data
+type CampaignRow = {
+  campaign: string
+  channel: string
+  clicks: number
+  impressions: number
+  ctr: number
+  cost: number
+  conversions: number
 }
 
-const columns: ColumnDef<any>[] = [
+// ✅ Columns are now typed
+const columns: ColumnDef<CampaignRow>[] = [
   {
     accessorKey: 'campaign',
     header: 'Campaign',
@@ -56,7 +63,7 @@ const columns: ColumnDef<any>[] = [
   },
 ]
 
-export function DataTable({ data }: { data: any[] }) {
+export function DataTable({ data }: { data: CampaignRow[] }) {
   const table = useReactTable({
     data,
     columns,
@@ -66,13 +73,13 @@ export function DataTable({ data }: { data: any[] }) {
   })
 
   const exportToCSV = () => {
-    const headers = columns.map((col) => col.header)
+    const headers = columns.map((col) => col.header as string)
     const csvContent = [
       headers.join(','),
       ...data.map((row) =>
         columns
           .map((col) => {
-            const accessor = col.accessorKey as string
+            const accessor = col.accessorKey as keyof CampaignRow
             return row[accessor]
           })
           .join(',')
@@ -83,7 +90,7 @@ export function DataTable({ data }: { data: any[] }) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', url)
-    link.setAttribute('download', 'admaybrand-data.csv')
+    link.setAttribute('download', 'admybrand-data.csv')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -113,18 +120,16 @@ export function DataTable({ data }: { data: any[] }) {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -137,20 +142,14 @@ export function DataTable({ data }: { data: any[] }) {
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
