@@ -30,37 +30,40 @@ interface CampaignPerformance {
   conversions: number
 }
 
-// Define a more specific column type that includes accessorKey
-interface AppColumnDef<TData> extends ColumnDef<TData> {
-  accessorKey?: keyof TData
-  header: string
-}
+// Helper type to extract accessor keys from ColumnDef
+type AccessorKeys<T> = T extends ColumnDef<infer TData> ? keyof TData : never
 
-const columns: AppColumnDef<CampaignPerformance>[] = [
+const columns: ColumnDef<CampaignPerformance>[] = [
   {
+    id: 'campaign',
     accessorKey: 'campaign',
     header: 'Campaign',
   },
   {
+    id: 'channel',
     accessorKey: 'channel',
     header: 'Channel',
   },
   {
+    id: 'clicks',
     accessorKey: 'clicks',
     header: 'Clicks',
     cell: ({ row }) => row.original.clicks.toLocaleString(),
   },
   {
+    id: 'impressions',
     accessorKey: 'impressions',
     header: 'Impressions',
     cell: ({ row }) => row.original.impressions.toLocaleString(),
   },
   {
+    id: 'ctr',
     accessorKey: 'ctr',
     header: 'CTR (%)',
     cell: ({ row }) => row.original.ctr.toFixed(2),
   },
   {
+    id: 'cost',
     accessorKey: 'cost',
     header: 'Cost ($)',
     cell: ({ row }) => row.original.cost.toLocaleString('en-US', {
@@ -71,6 +74,7 @@ const columns: AppColumnDef<CampaignPerformance>[] = [
     }),
   },
   {
+    id: 'conversions',
     accessorKey: 'conversions',
     header: 'Conversions',
     cell: ({ row }) => row.original.conversions.toLocaleString(),
@@ -91,16 +95,22 @@ export function DataTable({ data }: DataTableProps) {
   })
 
   const exportToCSV = () => {
-    const headers = columns.map(col => col.header)
+    // Create a map of column ids to accessor keys
+    const columnAccessors = columns.reduce((acc, column) => {
+      if ('accessorKey' in column && column.accessorKey) {
+        acc[column.id as string] = column.accessorKey as keyof CampaignPerformance
+      }
+      return acc
+    }, {} as Record<string, keyof CampaignPerformance>)
+
+    const headers = columns.map(col => col.header as string)
     const csvContent = [
       headers.join(','),
       ...data.map(row =>
-        columns
-          .map(col => {
-            if (!col.accessorKey) return ''
-            const value = row[col.accessorKey]
-            
-            if (col.accessorKey === 'cost' || col.accessorKey === 'ctr') {
+        Object.values(columnAccessors)
+          .map(accessor => {
+            const value = row[accessor]
+            if (accessor === 'cost' || accessor === 'ctr') {
               return Number(value).toFixed(2)
             }
             return String(value)
