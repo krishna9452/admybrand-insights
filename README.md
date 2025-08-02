@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AdMyBrand Insights
 
-## Getting Started
+AdMyBrand Insights is a responsive analytics dashboard that visualizes campaign data for marketing analysis. Built with **Next.js**, the app includes features like export options, loading skeletons, and dynamic filters to enhance user interaction.
 
-First, run the development server:
+🔗 **Live Demo:**  
+👉 [https://admybrand-insights-i3qglepdj-krishna-verma-s-projects.vercel.app/](https://admybrand-insights-i3qglepdj-krishna-verma-s-projects.vercel.app/)
 
-```bash
+---
+
+## 🚀 Features
+
+- 📊 Campaign insights dashboard
+- 📅 Date-based data filtering
+- 📥 Export to CSV and PDF (jsPDF + jspdf-autotable)
+- 💾 File download using `file-saver`
+- 💡 Skeleton loading for better UX
+- 🌐 Deployed on Vercel
+
+---
+
+## 🛠 Tech Stack
+
+| Tech           | Description            |
+|----------------|------------------------|
+| Next.js 15     | React-based framework  |
+| TypeScript     | Static typing          |
+| Tailwind CSS   | Utility-first styling  |
+| jsPDF          | PDF generation         |
+| file-saver     | Client-side file download |
+| Vercel         | Deployment platform    |
+
+---
+
+## 📦 Getting Started
+
+ 1. Clone and Install
+
+
+git clone https://github.com/krishna9452/admybrand-insights.git
+cd admybrand-insights
+npm install
+
+2. Run Locally
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Visit http://localhost:3000 in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🔧 Build for Production
+  npm run build
+  npm run start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+  👨‍💻 Author
+  Krishna Verma
+  📫 GitHub
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
