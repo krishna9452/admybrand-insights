@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -21,35 +22,65 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { DataTable } from '@/components/ui/data-table'
-import { columns, data } from './table-data'
+import { columns, data as tableData } from './table-data'
 import { ThemeToggle } from '@/components/theme-toggle'
-
-const revenueData = [
-  { date: '2025-07-01', revenue: 4800 },
-  { date: '2025-07-02', revenue: 5000 },
-  { date: '2025-07-03', revenue: 4900 },
-  { date: '2025-07-04', revenue: 5150 },
-  { date: '2025-07-05', revenue: 5400 },
-]
-
-const userData = [
-  { date: '2025-07-01', users: 120 },
-  { date: '2025-07-02', users: 150 },
-  { date: '2025-07-03', users: 100 },
-  { date: '2025-07-04', users: 180 },
-  { date: '2025-07-05', users: 200 },
-]
-
-const deviceData = [
-  { name: 'Mobile', value: 65 },
-  { name: 'Desktop', value: 30 },
-  { name: 'Tablet', value: 5 },
-]
+import { ExportButtons } from '@/components/export-buttons'
+import { DateFilter } from '@/components/date-filter'
+import { LoadingSkeleton } from '@/components/loading-skeleton'
 
 export default function OverviewPage() {
+  const [revenueData, setRevenueData] = useState<any[]>([])
+  const [userData, setUserData] = useState<any[]>([])
+  const [filteredTableData, setFilteredTableData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Simulate data fetch and real-time updates
+  useEffect(() => {
+    setRevenueData([
+      { date: '2025-07-01', revenue: 4800 },
+      { date: '2025-07-02', revenue: 5000 },
+      { date: '2025-07-03', revenue: 4900 },
+      { date: '2025-07-04', revenue: 5150 },
+      { date: '2025-07-05', revenue: 5400 },
+    ])
+    setUserData([
+      { date: '2025-07-01', users: 120 },
+      { date: '2025-07-02', users: 150 },
+      { date: '2025-07-03', users: 100 },
+      { date: '2025-07-04', users: 180 },
+      { date: '2025-07-05', users: 200 },
+    ])
+    setFilteredTableData(tableData)
+    setLoading(false)
+
+    const interval = setInterval(() => {
+      const newDate = new Date().toISOString().split('T')[0]
+      setRevenueData(prev => [...prev.slice(1), { date: newDate, revenue: Math.floor(4500 + Math.random() * 1000) }])
+      setUserData(prev => [...prev.slice(1), { date: newDate, users: Math.floor(100 + Math.random() * 100) }])
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleDateFilter = ({ start, end }: { start: string; end: string }) => {
+    const from = new Date(start)
+    const to = new Date(end)
+    const filtered = tableData.filter(row => {
+      const date = new Date(row.date)
+      return date >= from && date <= to
+    })
+    setFilteredTableData(filtered)
+  }
+
+  const deviceData = [
+    { name: 'Mobile', value: 65 },
+    { name: 'Desktop', value: 30 },
+    { name: 'Tablet', value: 5 },
+  ]
+
   return (
     <div className="p-6 space-y-8 animate-fade-in">
-      {/* Header with Theme Toggle */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard Overview</h1>
         <ThemeToggle />
@@ -63,10 +94,7 @@ export default function OverviewPage() {
           { title: 'Conversions', value: '220' },
           { title: 'Growth', value: '8.5%' },
         ].map((item) => (
-          <Card
-            key={item.title}
-            className="hover:shadow-xl transition-shadow duration-300"
-          >
+          <Card key={item.title} className="hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
               <CardTitle>{item.title}</CardTitle>
             </CardHeader>
@@ -82,16 +110,20 @@ export default function OverviewPage() {
             <CardTitle>Revenue (Line Chart)</CardTitle>
           </CardHeader>
           <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="#4f46e5" />
-              </LineChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <LoadingSkeleton height={288} />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="revenue" stroke="#4f46e5" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -100,16 +132,20 @@ export default function OverviewPage() {
             <CardTitle>Users (Bar Chart)</CardTitle>
           </CardHeader>
           <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={userData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="users" fill="#10b981" />
-              </BarChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <LoadingSkeleton height={288} />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={userData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="users" fill="#10b981" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -136,13 +172,19 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      {/* Data Table */}
+      {/* Table with Filters & Export */}
       <Card className="hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle>Recent Revenue Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={data} />
+          <DateFilter onChange={handleDateFilter} />
+          <ExportButtons data={filteredTableData} />
+          {loading ? (
+            <LoadingSkeleton height={300} />
+          ) : (
+            <DataTable columns={columns} data={filteredTableData} />
+          )}
         </CardContent>
       </Card>
     </div>
